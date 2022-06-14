@@ -1,12 +1,15 @@
 package br.com.fullstack.apiRest.controller;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,9 +41,11 @@ public class TopicosController {
 	private CursoRepository cursoRepository;
 
 	@GetMapping
-	public ResponseEntity<List<TopicoDTO>> listaTopicos(String nomeCurso) {
-		List<Topico> topicos = (nomeCurso == null) ? topicoRepository.findAll()
-				: topicoRepository.findByCurso_Nome(nomeCurso);
+	public ResponseEntity<Page<TopicoDTO>> listaTopicos(String nomeCurso,
+			@PageableDefault(direction = Direction.DESC, size = 10, page = 0, sort = "dataCriacao") Pageable paginacao) {
+
+		Page<Topico> topicos = (nomeCurso == null) ? topicoRepository.findAll(paginacao)
+				: topicoRepository.findByCurso_Nome(nomeCurso, paginacao);
 
 		return ResponseEntity.status(HttpStatus.FOUND).body(TopicoDTO.topicosAsDTOs(Optional.of(topicos)));
 	}

@@ -3,7 +3,8 @@ package br.com.fullstack.apiRest.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
 
 import br.com.fullstack.apiRest.model.Topico;
 
@@ -62,8 +63,7 @@ public class TopicoDTO {
 		return respostas;
 	}
 
-	public static List<TopicoDTO> topicosAsDTOs(Optional<List<Topico>> optional) {
-		return optional.isEmpty() ? null
-				: optional.get().stream().map(TopicoDTO::new).collect(Collectors.toUnmodifiableList());
+	public static Page<TopicoDTO> topicosAsDTOs(Optional<Page<Topico>> optional) {
+		return optional.isEmpty() ? null : optional.get().map(TopicoDTO::new);
 	}
 }
