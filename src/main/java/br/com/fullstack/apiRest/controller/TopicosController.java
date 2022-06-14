@@ -53,7 +53,8 @@ public class TopicosController {
 	}
 
 	@PostMapping
-	public ResponseEntity<TopicoDTO> novoTopicos(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {
+	@Transactional
+	public ResponseEntity<TopicoDTO> novoTopico(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {
 
 		Topico topico = topicoRepository.save(form.asTopico(cursoRepository));
 		URI uri = uriBuilder.path("/topicos/{id}").build(topico.getId());
@@ -64,14 +65,22 @@ public class TopicosController {
 	@PutMapping("/{id}")
 	@Transactional
 	public ResponseEntity<TopicoDTO> atualizaTopico(@PathVariable Long id, @RequestBody UpdateTopicoForm form) {
-		Topico topico = form.update(id, topicoRepository);
-		return ResponseEntity.status(HttpStatus.OK).body(new TopicoDTO(topico));
+
+		Optional<Topico> topico = form.update(id, topicoRepository);
+
+		return topico.isPresent() ? ResponseEntity.status(HttpStatus.OK).body(new TopicoDTO(topico.get()))
+				: ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
 	}
 
 	@DeleteMapping("/{id}")
 	@Transactional
 	public ResponseEntity<TopicoDTO> deletaTopico(@PathVariable Long id) {
-		topicoRepository.deleteById(id);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		try {
+			topicoRepository.deleteById(id);
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 	}
 }

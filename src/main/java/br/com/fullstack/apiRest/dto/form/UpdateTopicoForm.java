@@ -1,5 +1,7 @@
 package br.com.fullstack.apiRest.dto.form;
 
+import java.util.Optional;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -20,11 +22,14 @@ public class UpdateTopicoForm {
 	@Length(min = 10)
 	private String mensagem;
 
-	public Topico update(Long id, TopicoRepository topicoRepository) {
-		Topico topico = topicoRepository.findById(id).get();
+	public Optional<Topico> update(Long id, TopicoRepository topicoRepository) {
 
-		topico.setTitulo(this.titulo);
-		topico.setMensagem(this.mensagem);
+		Optional<Topico> topico = topicoRepository.findById(id);
+
+		if (topico.isPresent()) {
+			topico.get().setTitulo(this.titulo);
+			topico.get().setMensagem(this.mensagem);
+		}
 
 		return topico;
 	}
