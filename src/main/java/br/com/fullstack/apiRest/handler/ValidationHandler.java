@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,8 +15,8 @@ public class ValidationHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<List<ExceptionDTO>> handler(MethodArgumentNotValidException exception) {
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(exception.getBindingResult().getFieldErrors().stream().map(ExceptionDTO::new).toList());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getBindingResult().getFieldErrors().stream()
+				.map(e -> new ExceptionDTO(e.getField(), e.getDefaultMessage())).toList());
 	}
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
@@ -38,11 +37,6 @@ class ExceptionDTO {
 
 	private String field;
 	private String errorMessage;
-
-	public ExceptionDTO(FieldError invalidField) {
-		this.field = invalidField.getField();
-		this.errorMessage = invalidField.getDefaultMessage();
-	}
 
 	public ExceptionDTO(String field, String errorMessage) {
 		this.field = field;

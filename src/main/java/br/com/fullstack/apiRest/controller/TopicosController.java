@@ -6,6 +6,8 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -41,6 +43,8 @@ public class TopicosController {
 	private CursoRepository cursoRepository;
 
 	@GetMapping
+	@Cacheable(cacheNames = "listaTopicos")
+	@Transactional(readOnly = true)
 	public ResponseEntity<Page<TopicoDTO>> listaTopicos(String nomeCurso,
 			@PageableDefault(direction = Direction.DESC, size = 10, page = 0, sort = "dataCriacao") Pageable paginacao) {
 
@@ -51,6 +55,7 @@ public class TopicosController {
 	}
 
 	@GetMapping("/{id}")
+	@Transactional(readOnly = true)
 	public ResponseEntity<TopicoDTO> buscaTopico(@PathVariable Long id) {
 		Optional<Topico> retorno = topicoRepository.findById(id);
 		TopicoDTO body = retorno.isPresent() ? new TopicoDTO(retorno) : null;
@@ -59,6 +64,7 @@ public class TopicosController {
 
 	@PostMapping
 	@Transactional
+	@CacheEvict(cacheNames = "listaTopicos", allEntries = true)
 	public ResponseEntity<TopicoDTO> novoTopico(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {
 
 		Topico topico = topicoRepository.save(form.asTopico(cursoRepository));
@@ -69,6 +75,7 @@ public class TopicosController {
 
 	@PutMapping("/{id}")
 	@Transactional
+	@CacheEvict(cacheNames = "listaTopicos", allEntries = true)
 	public ResponseEntity<TopicoDTO> atualizaTopico(@PathVariable Long id, @RequestBody UpdateTopicoForm form) {
 
 		Optional<Topico> topico = form.update(id, topicoRepository);
@@ -80,6 +87,7 @@ public class TopicosController {
 
 	@DeleteMapping("/{id}")
 	@Transactional
+	@CacheEvict(cacheNames = "listaTopicos", allEntries = true)
 	public ResponseEntity<TopicoDTO> deletaTopico(@PathVariable Long id) {
 		try {
 			topicoRepository.deleteById(id);
